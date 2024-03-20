@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            
+        }
+        .navbar {
+    background-color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 20px;
+    font-size: 18px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+}
+
+        .navbar a {
+            color: #333 !important;
+        }
+        .widget {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            color: #4a47a3; /* Sample color from the gradient */
+        }
+        .chart-container {
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        /* Adjusted chart sizing */
+        .important-chart {
+            flex: 0 0 100%; /* Full width */
+            max-width: 100%; /* Full width */
+        }
+        .medium-chart {
+            flex: 0 0 50%; /* Half width */
+            max-width: 50%; /* Half width */
+        }
+        .small-chart {
+            flex: 0 0 25%; /* Quarter width */
+            max-width: 25%; /* Quarter width */
+        }
+        /* Style adjustments for mobile view */
+        @media (max-width: 768px) {
+            .medium-chart, .small-chart {
+                flex: 0 0 100%; /* Full width on small screens */
+                max-width: 100%; /* Full width on small screens */
+            }
+        }
+        .profile-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 60%;
+            background-color: #f8f9fa;
+            margin-left: 10px;
+            cursor: pointer;
+            margin-top: 10px; /* Adjust profile circle's position */
+        }
+        .navbar-collapse {
+            justify-content: space-between;
+            flex-grow: 1;
+        }
+        .logout-button {
+            margin-right: 10px;
+        }
+        .navbar-brand {
+            margin-right: auto; /* Push EduPath to the left */
+        }
+        h1 {
+            color: white; /* Make the title white */
+            margin-bottom: 20px; /* Add space between title and content */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">EduPath</a>
+            <div class="navbar-collapse">
+                <ul class="navbar-nav ml-auto"> <!-- Align items to the right -->
+                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Courses</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
+                </ul>
+                <div class="navbar-nav">
+                    <button class="btn btn-danger logout-button" id="logoutButton">Logout</button>
+                    <div class="profile-circle">
+                        <i class="fa-solid fa-user" style="color: #333; position: relative; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px;"></i>
+                    </div>                 
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4" style="color: #ffffff;">Dashboard</h1>
+        <!-- Widgets Row -->
+        <div class="row">
+            <div class="col-12 col-md-4">
+                <div class="widget">
+                    <h5>User Insight</h5>
+                    <p>Number of Courses Completed: 5</p>
+                    <p>Average Assessment Score: 80%</p>
+                    <p>Total Reading Time: 15 Hours</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="widget">
+                    <h5>Progress Update</h5>
+                    <p>Current Course Progress: 75%</p>
+                    <p>Projected Course Completion: 2 Weeks</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="widget">
+                    <h5>Latest Activity</h5>
+                    <p>Last Course Accessed: Advanced Mathematics</p>
+                    <p>Last Session: 1 Hour Ago</p>
+                </div>
+            </div>
+        </div>
+        <!-- Charts Row -->
+
+        <div class="row">
+            <div class="col-6 medium-chart">
+                <!-- Polar Chart for Course Completion -->
+                <div class="chart-container">
+                    <canvas id="courseCompletionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="col-6 medium-chart">
+                <!-- Doughnut Chart for User Prompts -->
+                <div class="chart-container">
+                    <canvas id="userPromptsChart"></canvas>
+                </div>
+            </div>
+            <div class="col-12 medium-chart">
+                <!-- Line Graph for Assessment Performance -->
+                <div class="chart-container">
+                    <canvas id="assessmentPerformanceChart"></canvas>
+                </div>
+            </div>
+            <div class="col-4 medium-chart">
+                <!-- Pie Chart for Reading Time -->
+                <div class="chart-container">
+                    <canvas id="readingTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the charts with different types and data
+        function initCharts() {
+            new Chart(document.getElementById('userPromptsChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Prompt 1', 'Prompt 2', 'Prompt 3', 'Prompt 4'],
+                    datasets: [{
+                        label: 'User Prompts',
+                        data: [12, 19, 3, 5],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false
+                }
+            });
+
+            new Chart(document.getElementById('courseCompletionChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: ['Course 1', 'Course 2', 'Course 3', 'Course 4'],
+                    datasets: [{
+                        label: 'Course Completion',
+                        data: [85, 60, 70, 90],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 206, 86, 0.5)',
+                            'rgba(75, 192, 192, 0.5)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false
+                }
+            });
+
+            new Chart(document.getElementById('assessmentPerformanceChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Test 1', 'Test 2', 'Test 3', 'Test 4','Test 5', 'Test 6', 'Test 7', 'Test 8'],
+                    datasets: [{
+                        label: 'Assessment Performance',
+                        data: [92, 76, 84, 88,92, 76, 84, 88],
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false
+                }
+            });
+
+            new Chart(document.getElementById('readingTimeChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Week 1', 'Week 2','Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Reading Time (hours)',
+                    data: [5, 10, 4, 8],
+                    backgroundColor: [
+                        'rgba(255, 159, 64, 0.5)',
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(153, 102, 255, 0.5)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    // Call initCharts when the document is fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        initCharts();
+    });
+</script>
+</body>
+</html>

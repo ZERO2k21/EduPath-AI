@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign In | CourseChef</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+        }
+        .signin-button {
+            padding: 10px 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button class="signin-button" id="googleSignInButton">Sign in with Google</button>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKwBZjQ8I7ciCdtmF91kXckKNUp8DU61o",
+            authDomain: "edupath-b8432.firebaseapp.com",
+            projectId: "edupath-b8432",
+            storageBucket: "edupath-b8432.appspot.com",
+            messagingSenderId: "514730469146",
+            appId: "1:514730469146:web:2e11297667d4a68dcfeea3",
+            measurementId: "G-NQP7K58FTD"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        document.getElementById('googleSignInButton').addEventListener('click', function() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then(function(result) {
+                window.location.href = 'index.html'; // Redirect to main page upon sign-in
+            }).catch(function(error) {
+                console.log(error);
+            });
+        });
+    </script>
+</body>
+</html>

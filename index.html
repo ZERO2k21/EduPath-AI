@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CourseChef</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .navbar a {
+            color: #333 !important;
+        }
+        .content-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            text-align: center;
+            justify-content: space-around; /* Space content horizontally */
+            height: 80vh; /* Make sure container has height to allow for vertical centering */
+        }
+        .content {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px; /* Adjust margin from the top */
+        }
+        #chatHistory {
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+        input[type="text"], button {
+            margin: 10px 0;
+        }
+        .profile-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 60%;
+            background-color: #f8f9fa;
+            margin-left: 10px;
+            cursor: pointer;
+            margin-top: 10px; /* Adjust profile circle's position */
+        }
+        .navbar-collapse {
+            justify-content: space-between;
+            flex-grow: 1;
+        }
+        .logout-button {
+            margin-right: 10px;
+        }
+        .navbar-brand {
+            margin-right: auto; /* Push EduPath to the left */
+        }
+        h1 {
+            color: white; /* Make the title white */
+            margin-bottom: 20px; /* Add space between title and content */
+        }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+    }
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">EduPath</a>
+            <div class="navbar-collapse">
+                <ul class="navbar-nav ml-auto"> <!-- Align items to the right -->
+                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Courses</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
+                </ul>
+                <div class="navbar-nav">
+                    <button class="btn btn-danger logout-button" id="logoutButton">Logout</button>
+                    <div class="profile-circle">
+                        <i class="fa-solid fa-user" style="color: #333; position: relative; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px;"></i>
+                    </div>                 
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container content-container">
+        <h1>Welcome to EduPath AI</h1>
+        <div class="content">
+            <h2 class="text-center">Please describe what you want to learn:</h2>
+            <div id="chatHistory"></div>
+            <input type="text" id="userInput" class="form-control" placeholder="What do you want to learn?">
+            <button id="sendButton" class="btn btn-primary btn-block">Ask</button>
+        </div>
+    </div>
+
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    const API_KEY = 'AIzaSyDKCMjNahh6gQZi4F9lAGoZCOvQ2nOt3dU';
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    let hasGenerated = false; // Flag to ensure one-time generation
+
+    async function initChat() {
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const chat = model.startChat();
+
+        document.getElementById('sendButton').addEventListener('click', async () => {
+            if (!hasGenerated) {
+                const customPrompt = "Only generate the headings of the particular topic and nothing else. Not even a single sentence or word should be there other than the topics. Don't use bold or italics. Separate each heading with a - in the same line. You are only allowed to generate course headings. Other than that anything is forbidden. You are a master course curriculum designer who can design professional course curriculums according to industry standards. ";
+                const userInput = customPrompt + document.getElementById('userInput').value;
+                
+                const result = await chat.sendMessage(userInput);
+                const response = await result.response;
+                let text = await response.text();
+                
+                // No need to format the text as we are just passing headings
+                sessionStorage.setItem('headings', text); // Store headings in session storage
+
+                document.getElementById('userInput').value = '';
+                hasGenerated = true; // Prevent further generation
+                
+                window.location.href = 'headingsPage.html'; // Redirect to headings page
+            } else {
+                alert("You have already generated content in this session.");
+            }
+        });
+    }
+
+    initChat();
+</script>
+
+    <script>
+        firebase.auth().onAuthStateChanged(user => {
+          if (!user) {
+            window.location.href = 'signin.html';
+          }
+        });
+      
+        function signOut() {
+          firebase.auth().signOut().then(() => {
+            window.location.href = 'signin.html';
+          }).catch((error) => {
+            console.error('Sign Out Error', error);
+          });
+        }
+      </script>
+      
+</body>
+</html>
